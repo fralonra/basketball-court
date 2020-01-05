@@ -1,0 +1,15 @@
+{
+  "backboardDistanceFromBaseline": 1.22,
+  "backboardWidth": 1.83,
+  "ftCircleRadius": 1.83,
+  "laneLength": 5.79,
+  "laneWidth": 3.66,
+  "length": 28.65,
+  "restrictedAreaRadius": 1.22,
+  "rimRadius": 0.2286,
+  "rimDistanceFromBackboard": 0.151,
+  "tplineDistanceFromHoop": 6.32,
+  "tplineDistanceFromHoopCorner": 6.32,
+  "tplineSideLength": 1.6,
+  "width": 15.24
+}
