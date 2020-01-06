@@ -7,6 +7,7 @@
   "laneWidth": 3.66,
   "length": 28.65,
   "restrictedAreaRadius": 1.22,
+  "restrainCircleRadius": 0.61,
   "rimRadius": 0.2286,
   "rimDistanceFromBackboard": 0.151,
   "tplineDistanceFromHoop": 6.32,
