@@ -18,6 +18,7 @@ const supportedPaths = [
 const defaultType = 'nba'
 const defaultWidth = 400
 const defaultTheme = 'plain'
+const ftCircleDashCount = 15
 
 function mergeTheme (opt) {
   const theme = typeof opt.theme === 'object'
@@ -147,13 +148,19 @@ function court (opt = {}) {
     const x2 = config.actualWidth - x1
     let y1 = 0
     let y2 = config.tplineSideLength * config.scaleRatio
-    let paths = `<path d="M${x1} ${y1} L${x1} ${y2} A${r} ${r} 0 0 0 ${x2} ${y2} L${x2} ${y1}Z" ${props} />`
+    let sweep = 0
+    let paths = makePath()
     if (!halfCourt) {
       y1 = config.actualLength
       y2 = config.actualLength - y2
-      paths += `<path d="M${x1} ${y1} L${x1} ${y2} A${r} ${r} 0 0 1 ${x2} ${y2} L${x2} ${y1}Z" ${props} />`
+      sweep = 1
+      paths += makePath()
     }
     return paths
+
+    function makePath () {
+      return `<path d="M${x1} ${y1} L${x1} ${y2} A${r} ${r} 0 0 ${sweep} ${x2} ${y2} L${x2} ${y1}Z" ${props} />`
+    }
   }
 
   function genLane () {
@@ -163,12 +170,16 @@ function court (opt = {}) {
     let y = 0
     config.laneActualLength = length
     const props = getThemePropsStr('lane')
-    let paths = `<rect x="${x}" y="${y}" width="${width}" height="${length}" ${props} />`
+    let paths = makePath()
     if (!halfCourt) {
       y = config.actualLength - length
-      paths += `<rect x="${x}" y="${y}" width="${width}" height="${length}" ${props} />`
+      paths += makePath()
     }
     return paths
+
+    function makePath () {
+      return `<rect x="${x}" y="${y}" width="${width}" height="${length}" ${props} />`
+    }
   }
 
   function genInnerLane () {
@@ -178,12 +189,16 @@ function court (opt = {}) {
     let y = 0
     config.innnerLaneX = x
     const props = getThemePropsStr('innerLane')
-    let paths = `<rect x="${x}" y="${y}" width="${width}" height="${length}" ${props} />`
+    let paths = makePath()
     if (!halfCourt) {
       y = config.actualLength - length
-      paths += `<rect x="${x}" y="${y}" width="${width}" height="${length}" ${props} />`
+      paths += makePath()
     }
     return paths
+
+    function makePath () {
+      return `<rect x="${x}" y="${y}" width="${width}" height="${length}" ${props} />`
+    }
   }
 
   function genFtCircle () {
@@ -191,13 +206,18 @@ function court (opt = {}) {
     const x1 = config.innnerLaneX || (config.actualWidth - config.ftCircleRadius * config.scaleRatio * 2) / 2
     const x2 = x1 + r * 2
     let y = config.laneActualLength || config.laneLength * config.scaleRatio
+    const gap = Math.PI * r / ftCircleDashCount
     const props = getThemePropsStr('ftCircle')
-    let paths = `<path d="M${x1} ${y} A${r} ${r} 0 0 1 ${x2} ${y}" ${props} /><path d="M${x1} ${y} A${r} ${r} 0 0 0 ${x2} ${y}Z" ${props} />`
+    let paths = makePath()
     if (!halfCourt) {
       y = config.actualLength - y
-      paths += `<path d="M${x1} ${y} A${r} ${r} 0 0 1 ${x2} ${y}" ${props} /><path d="M${x1} ${y} A${r} ${r} 0 0 0 ${x2} ${y}Z" ${props} />`
+      paths += makePath(false)
     }
     return paths
+
+    function makePath (top = true) {
+      return `<path d="M${x1} ${y} A${r} ${r} 0 0 0 ${x2} ${y}" ${!top ? `stroke-dasharray="${gap}"` : ''} ${props} /><path d="M${x1} ${y} A${r} ${r} 0 0 1 ${x2} ${y}Z" ${top ? `stroke-dasharray="${gap}"` : ''} ${props} />`
+    }
   }
 
   function genBackboard () {
@@ -207,12 +227,16 @@ function court (opt = {}) {
     let y = config.backboardDistanceFromBaseline * config.scaleRatio
     config.backboardY = y
     const props = getThemePropsStr('backboard', ['stroke'])
-    let paths = `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" ${props} />`
+    let paths = makePath()
     if (!halfCourt) {
       y = config.actualLength - y
-      paths += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" ${props} />`
+      paths += makePath()
     }
     return paths
+
+    function makePath () {
+      return `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" ${props} />`
+    }
   }
 
   function genRim () {
@@ -221,12 +245,16 @@ function court (opt = {}) {
     let y = (config.backboardY || config.backboardDistanceFromBaseline * config.scaleRatio) + config.rimDistanceFromBackboard * config.scaleRatio + r
     config.rimY = y
     const props = getThemePropsStr('rim')
-    let paths = `<circle cx="${x}" cy="${y}" r="${r}" ${props} />`
+    let paths = makePath()
     if (!halfCourt) {
       y = config.actualLength - y
-      paths += `<circle cx="${x}" cy="${y}" r="${r}" ${props} />`
+      paths += makePath()
     }
     return paths
+
+    function makePath () {
+      return `<circle cx="${x}" cy="${y}" r="${r}" ${props} />`
+    }
   }
 
   function genRestrictedArea () {
@@ -234,13 +262,19 @@ function court (opt = {}) {
     const x1 = config.actualWidth / 2 - r
     const x2 = x1 + r * 2
     let y = config.rimY || (config.backboardY || config.backboardDistanceFromBaseline * config.scaleRatio) + config.rimDistanceFromBackboard * config.scaleRatio + config.rimRadius * config.scaleRatio
+    let sweep = 0
     const props = getThemePropsStr('restricted')
-    let paths = `<path d="M${x1} ${y} A${r} ${r} 0 0 0 ${x2} ${y}" ${props} />`
+    let paths = makePath()
     if (!halfCourt) {
       y = config.actualLength - y
-      paths += `<path d="M${x1} ${y} A${r} ${r} 0 0 1 ${x2} ${y}" ${props} />`
+      sweep = 1
+      paths += makePath()
     }
     return paths
+
+    function makePath () {
+      return `<path d="M${x1} ${y} A${r} ${r} 0 0 ${sweep} ${x2} ${y}" ${props} />`
+    }
   }
 
   function genPath (key, func) {
