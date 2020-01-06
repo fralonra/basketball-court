@@ -1,6 +1,7 @@
 {
   "backboardDistanceFromBaseline": 1.2,
   "backboardWidth": 1.8,
+  "centerCircleRadius": 1.8,
   "ftCircleRadius": 1.8,
   "laneLength": 5.8,
   "laneWidth": 4.9,
