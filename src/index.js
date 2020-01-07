@@ -1,5 +1,6 @@
 const Node = require('./node')
 const themes = require('./themes')
+const data = require('../data')
 
 const supportedTypes = ['fiba', 'nba', 'ncaa', 'wnba']
 const supportedPaths = [
@@ -43,7 +44,7 @@ function resolveOpt (opt) {
   const type = supportedTypes.includes(opt.type) ? opt.type : defaultType
   const theme = mergeTheme(opt)
   const halfCourt = !!opt.halfCourt
-  const baseConfig = require('../data/' + type + '.json')
+  const baseConfig = data[type]
   const config = !opt.data
     ? { ...baseConfig }
     : { ...baseConfig, ...opt.data }
