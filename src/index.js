@@ -333,10 +333,6 @@ function court (opt = {}) {
 
   function genPath (key, func) {
     if (config[key] === false) return
-    if (typeof config[key] === 'function') {
-      paths.push(config[key](baseConfig))
-      return
-    }
     paths.push(func())
   }
 }
