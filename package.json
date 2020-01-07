@@ -1,7 +1,7 @@
 {
   "name": "basketball-court",
   "version": "0.1.0",
-  "description": "Quickly make a text spinner for your HTML. Using cli-spinners.",
+  "description": "Generate a configurable svg which renders a basketball court.",
   "main": "src/index.js",
   "scripts": {
     "lint": "standard --fix src/*.js | snazzy",
@@ -15,10 +15,9 @@
     "url": "git+https://github.com/fralonra/basketball-court.git"
   },
   "keywords": [
-    "spinner",
-    "cli-spinners",
-    "loading",
-    "progress"
+    "basketball",
+    "basketball court",
+    "svg"
   ],
   "author": "zoron (https://github.com/fralonra/)",
   "license": "MIT",
@@ -27,6 +26,8 @@
   },
   "homepage": "https://github.com/fralonra/basketball-court#readme",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^11.0.1",
+    "@rollup/plugin-json": "^4.0.1",
     "jest": "^24.9.0",
     "pre-commit": "^1.2.2",
     "rollup": "^1.27.14",
