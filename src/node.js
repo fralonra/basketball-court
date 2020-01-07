@@ -1,4 +1,4 @@
-const nameSpace = 'http://www.w3.org/2000/sv'
+const nameSpace = 'http://www.w3.org/2000/svg'
 
 function Node (tag, attrs, children) {
   this.tag = tag
