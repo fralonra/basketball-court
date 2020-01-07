@@ -1,3 +1,4 @@
+const Node = require('./node')
 const themes = require('./themes')
 
 const supportedTypes = ['fiba', 'nba', 'ncaa', 'wnba']
@@ -61,7 +62,14 @@ function court (opt = {}) {
   config.centerX = config.actualWidth / 2
   config.centerY = config.actualLength / 2
 
-  let path = ''
+  const paths = []
+  const svg = new Node('svg', {
+    version: 1.1,
+    baseProfile: 'full',
+    width: config.actualWidth,
+    height: config.actualLength,
+    ...resolveThemeProp('global', ['fill', 'stroke'])
+  }, paths)
   genPath('court', genCourt)
   genPath('centerCircle', genCenterCircle)
   genPath('restrainCircle', genRestrainCircle)
@@ -75,19 +83,10 @@ function court (opt = {}) {
   genPath('backboard', genBackboard)
   genPath('rim', genRim)
   genPath('restricted', genRestrictedArea)
-  wrapSvg()
-  return path
+  return svg
 
-  function resolveThemeProp (path, key) {
-    return theme[path] && theme[path][key]
-      ? theme[path][key]
-      : theme.global && theme.global[key]
-        ? theme.global[key]
-        : ''
-  }
-
-  function getThemePropsStr (path, keys = []) {
-    const props = []
+  function resolveThemeProp (path, keys = []) {
+    const props = {}
     keys.forEach(key => {
       push(key)
     })
@@ -96,32 +95,45 @@ function court (opt = {}) {
         push(key)
       }
     }
-    return props.join(' ')
+    return props
 
     function push (key) {
-      props.push(stringify(key, resolveThemeProp(path, key)))
-    }
-
-    function stringify (key, value) {
-      return `${key}="${value}"`
+      props[key] = theme[path] && theme[path][key]
+        ? theme[path][key]
+        : theme.global && theme.global[key]
+          ? theme.global[key]
+          : ''
     }
   }
 
   function genCourt () {
-    const props = getThemePropsStr('court')
-    return `<rect x="0" y="0" width="${config.actualWidth}" height="${config.actualLength}" ${props} />`
+    return new Node('rect', {
+      x: 0,
+      y: 0,
+      width: config.actualWidth,
+      height: config.actualLength,
+      ...resolveThemeProp('court')
+    })
   }
 
   function genHcCircle (radius, path) {
     const r = radius * config.scaleRatio
-    const props = getThemePropsStr(path)
+    const props = resolveThemeProp(path)
     if (halfCourt) {
       const x1 = config.actualWidth / 2 - r
       const x2 = config.actualWidth - x1
       const y = config.actualLength
-      return `<path d="M${x1} ${y} A${r} ${r} 0 0 1 ${x2} ${y}Z" ${props} />`
+      return new Node('path', {
+        d: `M${x1} ${y} A${r} ${r} 0 0 1 ${x2} ${y}Z`,
+        ...props
+      })
     }
-    return `<circle cx="${config.centerX}" cy="${config.centerY}" r="${r}" ${props} />`
+    return new Node('circle', {
+      cx: config.centerX,
+      cy: config.centerY,
+      r,
+      ...props
+    })
   }
 
   function genCenterCircle () {
@@ -137,67 +149,84 @@ function court (opt = {}) {
     const x1 = 0
     const x2 = width
     const y = config.centerY
-    const props = getThemePropsStr('hcline')
-    return `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" ${props} />`
+    return new Node('line', {
+      x1,
+      y1: y,
+      x2,
+      y2: y,
+      ...resolveThemeProp('hcline')
+    })
   }
 
   function genTpline () {
     const r = config.tplineDistanceFromHoop * config.scaleRatio
-    const props = getThemePropsStr('tpline')
     const x1 = config.actualWidth / 2 - config.tplineDistanceFromHoopCorner * config.scaleRatio
     const x2 = config.actualWidth - x1
     let y1 = 0
     let y2 = config.tplineSideLength * config.scaleRatio
     let sweep = 0
-    let paths = makePath()
+    const paths = [makePath()]
     if (!halfCourt) {
       y1 = config.actualLength
       y2 = config.actualLength - y2
       sweep = 1
-      paths += makePath()
+      paths.push(makePath())
     }
     return paths
 
     function makePath () {
-      return `<path d="M${x1} ${y1} L${x1} ${y2} A${r} ${r} 0 0 ${sweep} ${x2} ${y2} L${x2} ${y1}Z" ${props} />`
+      return new Node('path', {
+        d: `M${x1} ${y1} L${x1} ${y2} A${r} ${r} 0 0 ${sweep} ${x2} ${y2} L${x2} ${y1}Z`,
+        ...resolveThemeProp('tpline')
+      })
     }
   }
 
   function genLane () {
     const width = config.laneWidth * config.scaleRatio
-    const length = config.laneLength * config.scaleRatio
+    const height = config.laneLength * config.scaleRatio
     const x = (config.actualWidth - width) / 2
     let y = 0
-    config.laneActualLength = length
-    const props = getThemePropsStr('lane')
-    let paths = makePath()
+    config.laneActualLength = height
+    const paths = [makePath()]
     if (!halfCourt) {
-      y = config.actualLength - length
-      paths += makePath()
+      y = config.actualLength - height
+      paths.push(makePath())
     }
     return paths
 
     function makePath () {
-      return `<rect x="${x}" y="${y}" width="${width}" height="${length}" ${props} />`
+      return new Node('rect', {
+        x,
+        y,
+        width,
+        height,
+        ...resolveThemeProp('lane')
+      })
     }
   }
 
   function genInnerLane () {
     const width = config.ftCircleRadius * config.scaleRatio * 2
-    const length = config.laneActualLength || config.laneLength * config.scaleRatio
+    const height = config.laneActualLength || config.laneLength * config.scaleRatio
     const x = (config.actualWidth - width) / 2
     let y = 0
     config.innnerLaneX = x
-    const props = getThemePropsStr('innerLane')
-    let paths = makePath()
+    const paths = [makePath()]
     if (!halfCourt) {
-      y = config.actualLength - length
-      paths += makePath()
+      y = config.actualLength - height
+      paths.push(makePath())
     }
     return paths
 
     function makePath () {
-      return `<rect x="${x}" y="${y}" width="${width}" height="${length}" ${props} />`
+      return new Node('rect', {
+        x,
+        y,
+        width,
+        height,
+        ...resolveThemeProp('innerLane')
+      })
     }
   }
 
@@ -207,16 +236,30 @@ function court (opt = {}) {
     const x2 = x1 + r * 2
     let y = config.laneActualLength || config.laneLength * config.scaleRatio
     const gap = Math.PI * r / ftCircleDashCount
-    const props = getThemePropsStr('ftCircle')
-    let paths = makePath()
+    const props = resolveThemeProp('ftCircle')
+    const paths = []
+    makePath()
     if (!halfCourt) {
       y = config.actualLength - y
-      paths += makePath(false)
+      makePath(false)
     }
     return paths
 
     function makePath (top = true) {
-      return `<path d="M${x1} ${y} A${r} ${r} 0 0 0 ${x2} ${y}" ${!top ? `stroke-dasharray="${gap}"` : ''} ${props} /><path d="M${x1} ${y} A${r} ${r} 0 0 1 ${x2} ${y}Z" ${top ? `stroke-dasharray="${gap}"` : ''} ${props} />`
+      const upper = new Node('path', {
+        d: `M${x1} ${y} A${r} ${r} 0 0 0 ${x2} ${y}`,
+        ...props
+      })
+      const lower = new Node('path', {
+        d: `M${x1} ${y} A${r} ${r} 0 0 1 ${x2} ${y}`,
+        ...props
+      })
+      if (top) {
+        lower.setAttr('stroke-dasharray', gap)
+      } else {
+        upper.setAttr('stroke-dasharray', gap)
+      }
+      paths.push(upper, lower)
     }
   }
 
@@ -226,34 +269,43 @@ function court (opt = {}) {
     const x2 = (config.actualWidth + width) / 2
     let y = config.backboardDistanceFromBaseline * config.scaleRatio
     config.backboardY = y
-    const props = getThemePropsStr('backboard', ['stroke'])
-    let paths = makePath()
+    const paths = [makePath()]
     if (!halfCourt) {
       y = config.actualLength - y
-      paths += makePath()
+      paths.push(makePath())
     }
     return paths
 
     function makePath () {
-      return `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" ${props} />`
+      return new Node('line', {
+        x1,
+        y1: y,
+        x2,
+        y2: y,
+        ...resolveThemeProp('backboard')
+      })
     }
   }
 
   function genRim () {
     const r = config.rimRadius * config.scaleRatio
-    const x = config.actualWidth / 2
-    let y = (config.backboardY || config.backboardDistanceFromBaseline * config.scaleRatio) + config.rimDistanceFromBackboard * config.scaleRatio + r
-    config.rimY = y
-    const props = getThemePropsStr('rim')
-    let paths = makePath()
+    const cx = config.actualWidth / 2
+    let cy = (config.backboardY || config.backboardDistanceFromBaseline * config.scaleRatio) + config.rimDistanceFromBackboard * config.scaleRatio + r
+    config.rimY = cy
+    const paths = [makePath()]
     if (!halfCourt) {
-      y = config.actualLength - y
-      paths += makePath()
+      cy = config.actualLength - cy
+      paths.push(makePath())
     }
     return paths
 
     function makePath () {
-      return `<circle cx="${x}" cy="${y}" r="${r}" ${props} />`
+      return new Node('circle', {
+        r,
+        cx,
+        cy,
+        ...resolveThemeProp('rim')
+      })
     }
   }
 
@@ -263,32 +315,29 @@ function court (opt = {}) {
     const x2 = x1 + r * 2
     let y = config.rimY || (config.backboardY || config.backboardDistanceFromBaseline * config.scaleRatio) + config.rimDistanceFromBackboard * config.scaleRatio + config.rimRadius * config.scaleRatio
     let sweep = 0
-    const props = getThemePropsStr('restricted')
-    let paths = makePath()
+    const paths = [makePath()]
     if (!halfCourt) {
       y = config.actualLength - y
       sweep = 1
-      paths += makePath()
+      paths.push(makePath())
     }
     return paths
 
     function makePath () {
-      return `<path d="M${x1} ${y} A${r} ${r} 0 0 ${sweep} ${x2} ${y}" ${props} />`
+      return new Node('path', {
+        d: `M${x1} ${y} A${r} ${r} 0 0 ${sweep} ${x2} ${y}`,
+        ...resolveThemeProp('restricted')
+      })
     }
   }
 
   function genPath (key, func) {
     if (config[key] === false) return
     if (typeof config[key] === 'function') {
-      path += config[key](baseConfig)
+      paths.push(config[key](baseConfig))
       return
     }
-    path += func()
-  }
-
-  function wrapSvg () {
-    const props = getThemePropsStr('global', ['fill', 'stroke'])
-    path = `<svg version="1.1" baseProfile="full" width="${config.actualWidth}" height="${config.actualLength}" ${props} xmlns="http://www.w3.org/2000/svg">${path}</svg>`
+    paths.push(func())
   }
 }
 
