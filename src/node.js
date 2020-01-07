@@ -22,7 +22,7 @@ Node.prototype.toDom = function () {
     console.error('"window" or "window.document" is undefined, using string output instead.')
     return this.toString()
   }
-  const el = window.document.createAttributeNS(nameSpace, this.tag)
+  const el = window.document.createElementNS(nameSpace, this.tag)
   for (const attr in this.attrs) {
     el.setAttribute(attr, this.attrs[attr])
   }
