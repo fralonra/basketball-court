@@ -4,18 +4,18 @@ const data = require('../data')
 
 const supportedTypes = ['fiba', 'nba', 'ncaa', 'wnba']
 const supportedPaths = [
-  'court',
+  'backboard',
   'centerCircle',
-  'restrainCircle',
-  'hcline',
-  'tpline',
-  'lane',
-  'innerLane',
+  'court',
   'ftCircleHigh',
   'ftCircleLow',
-  'backboard',
-  'rim',
+  'hcline',
+  'innerLane',
+  'lane',
+  'restrainCircle',
   'restricted',
+  'rim',
+  'tpline',
   'global'
 ]
 const defaultType = 'nba'
@@ -374,7 +374,7 @@ function court (opt = {}) {
   }
 
   function genPath (key, func) {
-    if (config[key] === false) return
+    if (theme[key] === false) return
     const node = func()
     if (Array.isArray(node)) {
       node.forEach(n => {
