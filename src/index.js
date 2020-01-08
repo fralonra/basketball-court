@@ -40,7 +40,7 @@ function mergeTheme (opt) {
   return theme
 }
 
-function resolveOpt (opt) {
+function court (opt = {}) {
   const type = supportedTypes.includes(opt.type) ? opt.type : defaultType
   const theme = mergeTheme(opt)
   const halfCourt = !!opt.halfCourt
@@ -49,34 +49,19 @@ function resolveOpt (opt) {
   const config = !opt.data
     ? { ...baseConfig }
     : { ...baseConfig, ...opt.data }
-  config.actualWidth = opt.width || defaultWidth
   if (halfCourt) {
     config.length /= 2
   }
-  config.scaleRatio = config.actualWidth / config.width
-  config.actualLength = config.scaleRatio * config.length
-  return {
-    theme,
-    halfCourt,
-    trapezoid,
-    config
-  }
-}
-
-function court (opt = {}) {
-  const {
-    theme,
-    halfCourt,
-    trapezoid,
-    config
-  } = resolveOpt(opt)
+  const actualWidth = opt.width || defaultWidth
+  const scaleRatio = actualWidth / config.width
+  const actualLength = scaleRatio * config.length
 
   const paths = []
   const svg = new Node('svg', {
     version: 1.1,
     baseProfile: 'full',
-    width: config.actualWidth,
-    height: config.actualLength,
+    width: actualWidth,
+    height: actualLength,
     ...resolveThemeProp('global', ['fill', 'stroke'])
   }, paths)
 
@@ -88,7 +73,9 @@ function court (opt = {}) {
   }
   genPath('tpline', genTpline)
   genPath('lane', genLane)
-  genPath('innerLane', genInnerLane)
+  if (!trapezoid) {
+    genPath('innerLane', genInnerLane)
+  }
   genPath('ftCircleHigh', genFtCircleHigh)
   genPath('ftCircleLow', genFtCircleLow)
   genPath('backboard', genBackboard)
@@ -131,20 +118,20 @@ function court (opt = {}) {
       attrs: {
         x: 0,
         y: 0,
-        width: config.actualWidth,
-        height: config.actualLength,
+        width: actualWidth,
+        height: actualLength,
         ...resolveThemeProp('court')
       }
     }
   }
 
   function genHcCircle (radius, path) {
-    const r = radius * config.scaleRatio
+    const r = radius * scaleRatio
     const props = resolveThemeProp(path)
     if (halfCourt) {
-      const x1 = config.actualWidth / 2 - r
-      const x2 = config.actualWidth - x1
-      const y = config.actualLength
+      const x1 = actualWidth / 2 - r
+      const x2 = actualWidth - x1
+      const y = actualLength
       return {
         tag: 'path',
         attrs: {
@@ -156,8 +143,8 @@ function court (opt = {}) {
     return {
       tag: 'circle',
       attrs: {
-        cx: getOrSet('centerX', () => config.actualWidth / 2),
-        cy: getOrSet('centerY', () => config.actualLength / 2),
+        cx: getOrSet('centerX', () => actualWidth / 2),
+        cy: getOrSet('centerY', () => actualLength / 2),
         r,
         ...props
       }
@@ -173,7 +160,7 @@ function court (opt = {}) {
   }
 
   function genHcline () {
-    const width = config.actualWidth
+    const width = actualWidth
     const x1 = 0
     const x2 = width
     const y = config.centerY
@@ -190,16 +177,16 @@ function court (opt = {}) {
   }
 
   function genTpline () {
-    const r = config.tplineDistanceFromHoop * config.scaleRatio
-    const x1 = config.actualWidth / 2 - config.tplineDistanceFromHoopCorner * config.scaleRatio
-    const x2 = config.actualWidth - x1
+    const r = config.tplineDistanceFromHoop * scaleRatio
+    const x1 = actualWidth / 2 - config.tplineDistanceFromHoopCorner * scaleRatio
+    const x2 = actualWidth - x1
     let y1 = 0
-    let y2 = config.tplineSideLength * config.scaleRatio
+    let y2 = config.tplineSideLength * scaleRatio
     let sweep = 0
     const path = makePath()
     if (!halfCourt) {
-      y1 = config.actualLength
-      y2 = config.actualLength - y2
+      y1 = actualLength
+      y2 = actualLength - y2
       sweep = 1
       return [path, makePath()]
     }
@@ -217,24 +204,24 @@ function court (opt = {}) {
   }
 
   function resolveLaneParams () {
-    const width = config.laneWidth * config.scaleRatio
-    const height = getOrSet('laneActualLength', () => config.laneLength * config.scaleRatio)
-    const x = (config.actualWidth - width) / 2
+    const width = config.laneWidth * scaleRatio
+    const height = getOrSet('laneActualLength', () => config.laneLength * scaleRatio)
+    const x = (actualWidth - width) / 2
     return { width, height, x }
   }
 
   function genTrapezoidLane () {
     const { width, height, x } = resolveLaneParams()
-    const shortBase = getOrSet('innerLaneActualWidth', () => config.ftCircleRadius * config.scaleRatio * 2)
-    const x1 = getOrSet('innerLaneX', () => (config.actualWidth - shortBase) / 2)
+    const shortBase = getOrSet('innerLaneActualWidth', () => config.ftCircleRadius * scaleRatio * 2)
+    const x1 = getOrSet('innerLaneX', () => (actualWidth - shortBase) / 2)
     const x2 = x1 + shortBase
     const x3 = x + width
     let y1 = 0
     let y2 = height
     const path = makePath()
     if (!halfCourt) {
-      y1 = config.actualLength
-      y2 = config.actualLength - height
+      y1 = actualLength
+      y2 = actualLength - height
       return [path, makePath()]
     }
     return path
@@ -255,7 +242,7 @@ function court (opt = {}) {
     let y = 0
     const path = makePath()
     if (!halfCourt) {
-      y = config.actualLength - height
+      y = actualLength - height
       return [path, makePath()]
     }
     return path
@@ -279,13 +266,13 @@ function court (opt = {}) {
   }
 
   function genInnerLane () {
-    const width = getOrSet('innerLaneActualWidth', () => config.ftCircleRadius * config.scaleRatio * 2)
-    const height = getOrSet('laneActualLength', () => config.laneLength * config.scaleRatio)
-    const x = getOrSet('innerLaneX', () => (config.actualWidth - width) / 2)
+    const width = getOrSet('innerLaneActualWidth', () => config.ftCircleRadius * scaleRatio * 2)
+    const height = getOrSet('laneActualLength', () => config.laneLength * scaleRatio)
+    const x = getOrSet('innerLaneX', () => (actualWidth - width) / 2)
     let y = 0
     const path = makePath()
     if (!halfCourt) {
-      y = config.actualLength - height
+      y = actualLength - height
       return [path, makePath()]
     }
     return path
@@ -306,14 +293,14 @@ function court (opt = {}) {
 
   function genFtCircleArch (key) {
     const isLow = key === 'low'
-    const r = config.ftCircleRadius * config.scaleRatio
-    const x1 = getOrSet('innnerLaneX', () => (config.actualWidth - config.ftCircleRadius * config.scaleRatio * 2) / 2)
+    const r = config.ftCircleRadius * scaleRatio
+    const x1 = getOrSet('innnerLaneX', () => (actualWidth - config.ftCircleRadius * scaleRatio * 2) / 2)
     const x2 = x1 + r * 2
-    let y = getOrSet('laneActualLength', () => config.laneLength * config.scaleRatio)
+    let y = getOrSet('laneActualLength', () => config.laneLength * scaleRatio)
     const gap = isLow ? Math.PI * r / ftCircleDashCount : 0
     const path = makePath()
     if (!halfCourt) {
-      y = config.actualLength - y
+      y = actualLength - y
       return [path, makePath(1)]
     }
     return path
@@ -342,13 +329,13 @@ function court (opt = {}) {
   }
 
   function genBackboard () {
-    const width = config.backboardWidth * config.scaleRatio
-    const x1 = (config.actualWidth - width) / 2
-    const x2 = (config.actualWidth + width) / 2
-    let y = getOrSet('backboardY', () => config.backboardDistanceFromBaseline * config.scaleRatio)
+    const width = config.backboardWidth * scaleRatio
+    const x1 = (actualWidth - width) / 2
+    const x2 = (actualWidth + width) / 2
+    let y = getOrSet('backboardY', () => config.backboardDistanceFromBaseline * scaleRatio)
     const path = makePath()
     if (!halfCourt) {
-      y = config.actualLength - y
+      y = actualLength - y
       return [path, makePath()]
     }
     return path
@@ -368,12 +355,12 @@ function court (opt = {}) {
   }
 
   function genRim () {
-    const r = config.rimRadius * config.scaleRatio
-    const cx = config.actualWidth / 2
-    let cy = getOrSet('rimY', () => getOrSet('backboardY', () => config.backboardDistanceFromBaseline * config.scaleRatio) + config.rimDistanceFromBackboard * config.scaleRatio + r)
+    const r = config.rimRadius * scaleRatio
+    const cx = actualWidth / 2
+    let cy = getOrSet('rimY', () => getOrSet('backboardY', () => config.backboardDistanceFromBaseline * scaleRatio) + config.rimDistanceFromBackboard * scaleRatio + r)
     const path = makePath()
     if (!halfCourt) {
-      cy = config.actualLength - cy
+      cy = actualLength - cy
       return [path, makePath()]
     }
     return path
@@ -392,14 +379,14 @@ function court (opt = {}) {
   }
 
   function genRestrictedArea () {
-    const r = config.restrictedAreaRadius * config.scaleRatio
-    const x1 = config.actualWidth / 2 - r
+    const r = config.restrictedAreaRadius * scaleRatio
+    const x1 = actualWidth / 2 - r
     const x2 = x1 + r * 2
-    let y = getOrSet('rimY', () => (config.backboardY || config.backboardDistanceFromBaseline * config.scaleRatio) + config.rimDistanceFromBackboard * config.scaleRatio + config.rimRadius * config.scaleRatio)
+    let y = getOrSet('rimY', () => (config.backboardY || config.backboardDistanceFromBaseline * scaleRatio) + config.rimDistanceFromBackboard * scaleRatio + config.rimRadius * scaleRatio)
     let sweep = 0
     const path = makePath()
     if (!halfCourt) {
-      y = config.actualLength - y
+      y = actualLength - y
       sweep = 1
       return [path, makePath()]
     }
