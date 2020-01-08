@@ -78,9 +78,9 @@ function court (opt = {}) {
   }
   genPath('ftCircleHigh', genFtCircleHigh)
   genPath('ftCircleLow', genFtCircleLow)
+  genPath('restricted', genRestrictedArea)
   genPath('backboard', genBackboard)
   genPath('rim', genRim)
-  genPath('restricted', genRestrictedArea)
   return svg
 
   function getOrSet (key, func) {
