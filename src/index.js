@@ -44,6 +44,7 @@ function resolveOpt (opt) {
   const type = supportedTypes.includes(opt.type) ? opt.type : defaultType
   const theme = mergeTheme(opt)
   const halfCourt = !!opt.halfCourt
+  const trapezoid = !!opt.trapezoid
   const baseConfig = data[type]
   const config = !opt.data
     ? { ...baseConfig }
@@ -57,12 +58,18 @@ function resolveOpt (opt) {
   return {
     theme,
     halfCourt,
+    trapezoid,
     config
   }
 }
 
 function court (opt = {}) {
-  const { theme, halfCourt, config } = resolveOpt(opt)
+  const {
+    theme,
+    halfCourt,
+    trapezoid,
+    config
+  } = resolveOpt(opt)
 
   const paths = []
   const svg = new Node('svg', {
@@ -209,10 +216,42 @@ function court (opt = {}) {
     }
   }
 
-  function genLane () {
+  function resolveLaneParams () {
     const width = config.laneWidth * config.scaleRatio
     const height = getOrSet('laneActualLength', () => config.laneLength * config.scaleRatio)
     const x = (config.actualWidth - width) / 2
+    return { width, height, x }
+  }
+
+  function genTrapezoidLane () {
+    const { width, height, x } = resolveLaneParams()
+    const shortBase = getOrSet('innerLaneActualWidth', () => config.ftCircleRadius * config.scaleRatio * 2)
+    const x1 = getOrSet('innerLaneX', () => (config.actualWidth - shortBase) / 2)
+    const x2 = x1 + shortBase
+    const x3 = x + width
+    let y1 = 0
+    let y2 = height
+    const path = makePath()
+    if (!halfCourt) {
+      y1 = config.actualLength
+      y2 = config.actualLength - height
+      return [path, makePath()]
+    }
+    return path
+
+    function makePath () {
+      return {
+        tag: 'path',
+        attrs: {
+          d: `M${x} ${y1} L${x1} ${y2} L${x2} ${y2} L${x3} ${y1}Z`,
+          ...resolveThemeProp('lane')
+        }
+      }
+    }
+  }
+
+  function genRectLane () {
+    const { width, height, x } = resolveLaneParams()
     let y = 0
     const path = makePath()
     if (!halfCourt) {
@@ -235,8 +274,12 @@ function court (opt = {}) {
     }
   }
 
+  function genLane () {
+    return trapezoid ? genTrapezoidLane() : genRectLane()
+  }
+
   function genInnerLane () {
-    const width = config.ftCircleRadius * config.scaleRatio * 2
+    const width = getOrSet('innerLaneActualWidth', () => config.ftCircleRadius * config.scaleRatio * 2)
     const height = getOrSet('laneActualLength', () => config.laneLength * config.scaleRatio)
     const x = getOrSet('innerLaneX', () => (config.actualWidth - width) / 2)
     let y = 0
