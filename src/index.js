@@ -21,49 +21,31 @@ const supportedPaths = [
 const defaultType = 'nba'
 const defaultWidth = 400
 const defaultTheme = 'plain'
-const ftCircleDashCount = 15
+const defaultFtCircleDashCount = 15
 
-function mergeTheme (opt) {
-  const theme = typeof opt.theme === 'object'
-    ? opt.theme
-    : (themes[opt.theme] || themes[defaultTheme])
-  if (opt.data && typeof opt.data === 'object') {
-    for (const path in opt.data) {
-      if (supportedPaths.includes(path)) {
-        theme[path] = {
-          ...theme[path],
-          ...opt.data[path]
-        }
-      }
-    }
-  }
-  return theme
-}
+function genPaths (config) {
+  const {
+    actualWidth,
+    actualLength,
+    scaleRatio,
+    theme,
+    halfCourt,
+    trapezoid
+  } = config
 
-function court (opt = {}) {
-  const type = supportedTypes.includes(opt.type) ? opt.type : defaultType
-  const theme = mergeTheme(opt)
-  const halfCourt = !!opt.halfCourt
-  const trapezoid = !!opt.trapezoid
-  const baseConfig = data[type]
-  const config = !opt.data
-    ? { ...baseConfig }
-    : { ...baseConfig, ...opt.data }
-  if (halfCourt) {
-    config.length /= 2
-  }
-  const actualWidth = opt.width || defaultWidth
-  const scaleRatio = actualWidth / config.width
-  const actualLength = scaleRatio * config.length
-
-  const paths = []
+  const group = new Node('g', resolveThemeProp('global', ['fill', 'stroke']))
   const svg = new Node('svg', {
-    version: 1.1,
-    baseProfile: 'full',
     width: actualWidth,
-    height: actualLength,
-    ...resolveThemeProp('global', ['fill', 'stroke'])
-  }, paths)
+    height: actualLength
+  }, [group])
+
+  const res = {
+    toString: () => svg.toString(),
+    toDom: () => svg.toDom(),
+    left,
+    right,
+    reverse
+  }
 
   genPath('court', genCourt)
   genPath('centerCircle', genCenterCircle)
@@ -81,7 +63,8 @@ function court (opt = {}) {
   genPath('restricted', genRestrictedArea)
   genPath('backboard', genBackboard)
   genPath('rim', genRim)
-  return svg
+
+  return res
 
   function getOrSet (key, func) {
     if (key in config) {
@@ -104,11 +87,14 @@ function court (opt = {}) {
     return props
 
     function push (key) {
-      props[key] = theme[path] && theme[path][key]
+      const value = theme[path] && theme[path][key]
         ? theme[path][key]
         : theme.global && theme.global[key]
           ? theme.global[key]
-          : ''
+          : null
+      if (value !== null) {
+        props[key] = value
+      }
     }
   }
 
@@ -291,13 +277,12 @@ function court (opt = {}) {
     }
   }
 
-  function genFtCircleArch (key) {
-    const isLow = key === 'low'
+  function genFtCircleArch (isLow = true) {
     const r = config.ftCircleRadius * scaleRatio
     const x1 = getOrSet('innnerLaneX', () => (actualWidth - config.ftCircleRadius * scaleRatio * 2) / 2)
     const x2 = x1 + r * 2
     let y = getOrSet('laneActualLength', () => config.laneLength * scaleRatio)
-    const gap = isLow ? Math.PI * r / ftCircleDashCount : 0
+    const gap = isLow ? Math.PI * r / config.ftCircleDashCount : 0
     const path = makePath()
     if (!halfCourt) {
       y = actualLength - y
@@ -310,7 +295,7 @@ function court (opt = {}) {
         tag: 'path',
         attrs: {
           d: `M${x1} ${y} A${r} ${r} 0 0 ${isLow ? sweep ^ 1 : sweep} ${x2} ${y}`,
-          ...resolveThemeProp('ftCircle' + key)
+          ...resolveThemeProp('ftCircle' + isLow ? 'low' : 'high')
         }
       }
       if (isLow) {
@@ -321,11 +306,11 @@ function court (opt = {}) {
   }
 
   function genFtCircleHigh () {
-    return genFtCircleArch('high')
+    return genFtCircleArch(false)
   }
 
   function genFtCircleLow () {
-    return genFtCircleArch('low')
+    return genFtCircleArch()
   }
 
   function genBackboard () {
@@ -408,16 +393,78 @@ function court (opt = {}) {
     const node = func()
     if (Array.isArray(node)) {
       node.forEach(n => {
-        paths.push(genNode(n))
+        group.appendChild(genNode(n))
       })
     } else {
-      paths.push(genNode(node))
+      group.appendChild(genNode(node))
     }
 
     function genNode (data) {
       return new Node(data.tag, data.attrs)
     }
   }
+
+  function left () {
+    group.setAttr('transform', `rotate(-90 ${actualWidth / 2} ${actualWidth / 2})`, false)
+    svg.setAttr('width', actualLength)
+    svg.setAttr('height', actualWidth)
+    return res
+  }
+
+  function right () {
+    if (!halfCourt) return left()
+    group.setAttr('transform', `rotate(90 ${actualLength / 2} ${actualLength / 2})`, false)
+    svg.setAttr('width', actualLength)
+    svg.setAttr('height', actualWidth)
+    return res
+  }
+
+  function reverse () {
+    if (halfCourt) {
+      group.setAttr('transform', `rotate(180 ${actualWidth / 2} ${actualLength / 2})`, false)
+    }
+    return res
+  }
+}
+
+function mergeTheme (opt) {
+  const theme = typeof opt.theme === 'object'
+    ? opt.theme
+    : (themes[opt.theme] || themes[defaultTheme])
+  if (opt.data && typeof opt.data === 'object') {
+    for (const path in opt.data) {
+      if (supportedPaths.includes(path)) {
+        theme[path] = {
+          ...theme[path],
+          ...opt.data[path]
+        }
+      }
+    }
+  }
+  return theme
+}
+
+function resolveConfig (opt) {
+  const type = supportedTypes.includes(opt.type) ? opt.type : defaultType
+  const baseConfig = data[type]
+  const config = !opt.data
+    ? { ...baseConfig }
+    : { ...baseConfig, ...opt.data }
+  config.theme = mergeTheme(opt)
+  config.halfCourt = !!opt.halfCourt
+  config.trapezoid = !!opt.trapezoid
+  if (config.halfCourt) {
+    config.length /= 2
+  }
+  config.actualWidth = opt.width || defaultWidth
+  config.scaleRatio = config.actualWidth / config.width
+  config.actualLength = config.scaleRatio * config.length
+  config.ftCircleDashCount = opt.ftCircleDashCount || defaultFtCircleDashCount
+  return config
+}
+
+function court (opt = {}) {
+  return genPaths(resolveConfig(opt))
 }
 
 module.exports = court
