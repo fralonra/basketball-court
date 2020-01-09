@@ -14,7 +14,9 @@ function genPaths (config) {
     actualLength,
     scaleRatio,
     theme,
+    horizontal,
     halfCourt,
+    reverse,
     trapezoid
   } = config
 
@@ -23,14 +25,7 @@ function genPaths (config) {
     width: actualWidth,
     height: actualLength
   }, [group])
-
-  const res = {
-    toString: () => svg.toString(),
-    toDom: () => svg.toDom(),
-    left,
-    right,
-    reverse
-  }
+  groupTransform()
 
   genPath('court', genCourt)
   genPath('centerCircle', genCenterCircle)
@@ -49,7 +44,28 @@ function genPaths (config) {
   genPath('backboard', genBackboard)
   genPath('rim', genRim)
 
-  return res
+  return svg
+
+  function groupTransform () {
+    const originTransform = group.attrs.transform ? group.attrs.transform + ' ' : ''
+    if (horizontal) {
+      svg.setAttr('width', actualLength)
+      svg.setAttr('height', actualWidth)
+      if (halfCourt && reverse) {
+        rotate(90, actualLength / 2, actualLength / 2)
+      } else if (halfCourt) {
+        rotate(-90, actualWidth / 2, actualWidth / 2)
+      } else {
+        rotate(-90, actualWidth / 2, actualWidth / 2)
+      }
+    } else if (reverse) {
+      rotate(180, actualWidth / 2, actualLength / 2)
+    }
+
+    function rotate (angle, x, y) {
+      group.setAttr('transform', originTransform + `rotate(${angle} ${x} ${y})`)
+    }
+  }
 
   function getOrSet (key, func) {
     if (key in config) {
@@ -388,28 +404,6 @@ function genPaths (config) {
       return new Node(data.tag, data.attrs)
     }
   }
-
-  function left () {
-    group.setAttr('transform', `rotate(-90 ${actualWidth / 2} ${actualWidth / 2})`, false)
-    svg.setAttr('width', actualLength)
-    svg.setAttr('height', actualWidth)
-    return res
-  }
-
-  function right () {
-    if (!halfCourt) return left()
-    group.setAttr('transform', `rotate(90 ${actualLength / 2} ${actualLength / 2})`, false)
-    svg.setAttr('width', actualLength)
-    svg.setAttr('height', actualWidth)
-    return res
-  }
-
-  function reverse () {
-    if (halfCourt) {
-      group.setAttr('transform', `rotate(180 ${actualWidth / 2} ${actualLength / 2})`, false)
-    }
-    return res
-  }
 }
 
 function mergeTheme (opt) {
@@ -437,7 +431,9 @@ function resolveConfig (opt) {
   const type = supportedTypes.includes(opt.type) ? opt.type : defaultType
   const config = { ...data[type] }
   config.theme = mergeTheme(opt)
+  config.horizontal = !!opt.horizontal
   config.halfCourt = !!opt.halfCourt
+  config.reverse = !!opt.reverse
   config.trapezoid = !!opt.trapezoid
   if (config.halfCourt) {
     config.length /= 2

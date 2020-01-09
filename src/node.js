@@ -10,12 +10,8 @@ Node.prototype.appendChild = function (node) {
   this.children.push(node)
 }
 
-Node.prototype.setAttr = function (key, value, override = true) {
-  if (!override && typeof this.attrs[key] === 'string') {
-    this.attrs[key] = this.attrs[key] + ' ' + value
-  } else {
-    this.attrs[key] = value
-  }
+Node.prototype.setAttr = function (key, value) {
+  this.attrs[key] = value
 }
 
 Node.prototype.toString = function () {
