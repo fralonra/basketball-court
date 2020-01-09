@@ -3,21 +3,6 @@ const themes = require('./themes')
 const data = require('../data')
 
 const supportedTypes = ['fiba', 'nba', 'ncaa', 'wnba']
-const supportedPaths = [
-  'backboard',
-  'centerCircle',
-  'court',
-  'ftCircleHigh',
-  'ftCircleLow',
-  'hcline',
-  'innerLane',
-  'lane',
-  'restrainCircle',
-  'restricted',
-  'rim',
-  'tpline',
-  'global'
-]
 const defaultType = 'nba'
 const defaultWidth = 400
 const defaultTheme = 'plain'
@@ -428,28 +413,29 @@ function genPaths (config) {
 }
 
 function mergeTheme (opt) {
-  const theme = typeof opt.theme === 'object'
+  const theme = {}
+  const base = opt.theme && typeof opt.theme === 'object'
     ? opt.theme
     : (themes[opt.theme] || themes[defaultTheme])
-  if (opt.data && typeof opt.data === 'object') {
-    for (const path in opt.data) {
-      if (supportedPaths.includes(path)) {
-        theme[path] = {
-          ...theme[path],
-          ...opt.data[path]
-        }
+  merge(theme, base)
+  merge(theme, opt.data)
+  return theme
+
+  function merge (a, b) {
+    if (!b || typeof b !== 'object') return
+    for (const key in b) {
+      if (typeof b[key] === 'object') {
+        a[key] = { ...a[key], ...b[key] }
+      } else {
+        a[key] = b[key]
       }
     }
   }
-  return theme
 }
 
 function resolveConfig (opt) {
   const type = supportedTypes.includes(opt.type) ? opt.type : defaultType
-  const baseConfig = data[type]
-  const config = !opt.data
-    ? { ...baseConfig }
-    : { ...baseConfig, ...opt.data }
+  const config = { ...data[type] }
   config.theme = mergeTheme(opt)
   config.halfCourt = !!opt.halfCourt
   config.trapezoid = !!opt.trapezoid
