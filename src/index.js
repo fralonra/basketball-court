@@ -446,7 +446,11 @@ function resolveConfig (opt) {
 }
 
 function court (opt = {}) {
-  return genPaths(resolveConfig(opt))
+  const svg = genPaths(resolveConfig(opt))
+  return {
+    toString: () => svg.toString(),
+    toDom: () => svg.toDom()
+  }
 }
 
 module.exports = court
