@@ -23,7 +23,8 @@ function genPaths (config) {
   const group = new Node('g', resolveThemeProp('global', ['fill', 'stroke']))
   const svg = new Node('svg', {
     width: actualWidth,
-    height: actualLength
+    height: actualLength,
+    xmlns: 'http://www.w3.org/2000/svg'
   }, [group])
   groupTransform()
 
