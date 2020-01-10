@@ -1,13 +1,19 @@
 import commonjs from '@rollup/plugin-commonjs'
 import json from '@rollup/plugin-json'
-import { terser } from 'rollup-plugin-terser'
+import babel from 'rollup-plugin-babel'
 import filesize from 'rollup-plugin-filesize'
+import { terser } from 'rollup-plugin-terser'
+
+const babelOption = {
+  presets: [['@babel/env', { modules: false }]]
+}
 
 export default [{
   input: 'src/index.js',
   plugins: [
     commonjs(),
     json(),
+    babel(babelOption),
     filesize()
   ],
   output: {
@@ -20,6 +26,7 @@ export default [{
   plugins: [
     commonjs(),
     json(),
+    babel(babelOption),
     terser(),
     filesize()
   ],
