@@ -19,7 +19,7 @@ export default [{
   output: {
     file: 'dist/basketball-court.js',
     format: 'umd',
-    name: 'court'
+    name: 'basketballCourt'
   }
 }, {
   input: 'src/index.js',
@@ -33,6 +33,6 @@ export default [{
   output: {
     file: 'dist/basketball-court.min.js',
     format: 'umd',
-    name: 'court'
+    name: 'basketballCourt'
   }
 }]
