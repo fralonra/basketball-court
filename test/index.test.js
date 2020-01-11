@@ -111,7 +111,7 @@ test('options.data mixin theme => toString()', () => {
         fill: '#54A2C2'
       },
       restricted: {
-        fill: 'transparent'
+        fill: 'none'
       }
     }
   }).toString()

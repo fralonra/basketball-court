@@ -1,0 +1,17 @@
+{
+  "global": {
+    "fill": "none",
+    "stroke": "#fff"
+  },
+  "court": {
+    "fill": "#54A2C2"
+  },
+  "centerCircle": {
+    "fill": "#CFA246"
+  },
+  "restrainCircle": false,
+  "lane": {
+    "fill": "#CFA246"
+  },
+  "innerLane": false
+}
