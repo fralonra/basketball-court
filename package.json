@@ -1,7 +1,7 @@
 {
   "name": "basketball-court",
   "version": "0.3.1",
-  "description": "Generate a basketball court in svg.",
+  "description": "Generate a basketball court in svg format.",
   "main": "src/index.js",
   "scripts": {
     "lint": "standard --fix src/*.js | snazzy",
