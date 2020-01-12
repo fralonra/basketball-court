@@ -1,0 +1,134 @@
+---
+name: Getting Started
+route: /
+---
+
+# Basketball Court
+
+[![npm version](https://img.shields.io/npm/v/basketball-court.svg)](https://www.npmjs.com/package/basketball-court)
+[![Build Status](https://travis-ci.com/fralonra/basketball-court.svg?branch=master)](https://travis-ci.com/fralonra/basketball-court)
+
+Generate a basketball court in SVG format. Can be outputed as a string or convert into an SVGElement.
+The dimensions data are collected from [Wikipedia][wiki], and stored in [JSON files][datas] in meters. If you find there are some errors, please open an issue or send a PR!
+
+## Install
+
+```bash
+npm install basketball-court
+```
+
+or
+
+```bash
+yarn add basketball-court
+```
+
+## Usage
+
+```javascript
+const court = require('basketball-court')
+// Or include the script in your HTML.
+// <script src="/path/to/basketball-court.min.js"></script>
+
+// Convert svg to string, which can be outputed as a file.
+console.log(court().toString())
+// Or you might want to use it as an SVGELement.
+const element = court().toDom()
+```
+
+## API
+
+#### court ([options])
+
+- `options` - The options object.
+  - `width` - The width of the court in px. Default: 400.
+  - `type` - The type of the court. Valid values: `nba`, `fiba`, `ncaa`, `wnba`.  Default: `nba`.
+  - `theme` - There are currently four preseted themes: `plain`, `beach`, `steppe`, `volcano`. You can preview each of the theme [here][themes]. Custom themes are also supported, you can check [here][theme config] to learn about how to customize each part of the court. You can extend a theme by `data` property which is described below. Default: `plain`.
+  - `ftCircleDashCount` - The number of dashed lines and spaces between them along a free throw circle. Default: 15.
+  - `horizontal` - Whether the court should be horizontal. Default: false.
+  - `halfCourt` - Whether to generate only a half court. Default: false.
+  - `reverse` - Whether to generate a reversed court. Noted that it would look the same if `halfCourt` is false. Default: false.
+  - `trapezoid` - Whether the lane area should has a trapezoid shape (or a rectangle otherwise). Default: false.
+  - `data` - Additional config which that would override theme config. Check [here][theme config] for more information.
+
+## Theme Config
+
+To specify a preset theme, just do the following:
+
+```js
+court({
+  theme: 'beach' // This will apply the `beach` theme for you instead of the default `plain`.
+})
+```
+
+### Customize
+
+The script will generate an SVGElement which contains a `g` element as its sole child. Every part of the court is an element to this `g` element and can be customized seperately. The below image shows each part of the court and they are listed in z-index order.
+
+<img src="/public/paths.svg" alt="paths" title="paths" />
+
+- global: Use on the `g` element. You can define some global property here.
+- court: The side line and the base line.
+- centerCircle: The center circle.
+- restrainCircle: The restraning circle inside the center circle.
+- hcline: The half-court line.
+- tpline: The three-point line.
+- lane: The lane (key or painted area or restricted area or three second area).
+- innerLane: The rectangle inside the lane. Will never be rendered if `trapezoid` is `true` in options.
+- ftCircleHigh: The free-throw circle (high post side).
+- ftCircleLow: The free-throw circle (low post side).
+- restricted: Restricted area.
+- backboard: The backboard.
+- rim: The rim (or hoop or basket).
+
+To hide a path, just set it to `false` and you are done!
+
+```js
+court({
+  theme: {
+    backboard: {
+      stroke: red // This will stroke the backboard in red.
+    },
+    rim: false // This will hide the rim.
+  }
+})
+```
+
+***Note:*** You should be care of the property values for that you might encounter the problem of script injection if they are unsafe string.
+
+You can use `data` option to extend the preset theme.
+```js
+court({
+  theme: 'beach',
+  data: {
+    rim: false
+  }
+})
+```
+
+## Preseted Themes
+
+There are currently preseted themes in `basketball-court`. You can find theme [here](https://github.com/fralonra/basketball-court/tree/master/src/themes).
+
+### plain
+
+The default theme. Just `fill: none` and `stroke: #000`.
+
+<img src="/public/theme-plain.svg" alt="theme: plain" title="theme: plain" />
+
+### beach
+
+<img src="/public/theme-beach.svg" alt="theme: beach" title="theme: beach" />
+
+### steppe
+
+<img src="/public/theme-steppe.svg" alt="theme: steppe" title="theme: steppe" />
+
+### volcano
+
+<img src="/public/theme-volcano.svg" alt="theme: volcano" title="theme: volcano" />
+
+[wiki]: https://en.wikipedia.org/wiki/Basketball_court
+[datas]: https://github.com/fralonra/basketball-court/tree/master/data
+[themes]: https://basketball-court.now.sh/#preseted-themes
+[theme config]: https://basketball-court.now.sh/#theme-config
