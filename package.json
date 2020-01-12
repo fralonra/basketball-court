@@ -1,6 +1,6 @@
 {
   "name": "basketball-court",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Generate a basketball court in svg format.",
   "main": "src/index.js",
   "scripts": {
