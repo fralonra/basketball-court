@@ -1,0 +1,57 @@
+---
+name: Getting Started
+route: /
+---
+
+# Basketball Court
+
+[![npm version](https://img.shields.io/npm/v/basketball-court.svg)](https://www.npmjs.com/package/basketball-court)
+[![Build Status](https://travis-ci.com/fralonra/basketball-court.svg?branch=master)](https://travis-ci.com/fralonra/basketball-court)
+
+Generate a basketball court in SVG format. Can be outputed as a string or convert into an SVGElement.
+The dimensions data are collected from [Wikipedia][wiki], and stored in [JSON files][datas] in meters. If you find there are some errors, please open an issue or send a PR!
+
+## Install
+
+```bash
+npm install basketball-court
+```
+
+or
+
+```bash
+yarn add basketball-court
+```
+
+## Usage
+
+```javascript
+const court = require('basketball-court')
+// Or include the script in your HTML.
+// <script src="/path/to/basketball-court.min.js"></script>
+
+// Convert svg to string, which can be outputed as a file.
+console.log(court().toString())
+// Or you might want to use it as an SVGELement.
+const element = court().toDom()
+```
+
+## API
+
+#### court ([options])
+
+- `options` - The options object.
+  - `width` - The width of the court in px. Default: 400.
+  - `type` - The type of the court. Valid values: `nba`, `fiba`, `ncaa`, `wnba`.  Default: `nba`.
+  - `theme` - There are currently four preseted themes: `plain`, `beach`, `steppe`, `volcano`. You can preview each of the theme [here][themes]. Custom themes are also supported, you can check [here][theme config] to learn about how to customize each part of the court. You can extend a theme by `data` property which is described below. Default: `plain`.
+  - `ftCircleDashCount` - The number of dashed lines and spaces between them along a free throw circle. Default: 15.
+  - `horizontal` - Whether the court should be horizontal. Default: false.
+  - `halfCourt` - Whether to generate only a half court. Default: false.
+  - `reverse` - Whether to generate a reversed court. Noted that it would look the same if `halfCourt` is false. Default: false.
+  - `trapezoid` - Whether the lane area should has a trapezoid shape (or a rectangle otherwise). Default: false.
+  - `data` - Additional config which that would override theme config. Check [here][theme config] for more information.
+
+[wiki]: https://en.wikipedia.org/wiki/Basketball_court
+[datas]: https://github.com/fralonra/basketball-court/tree/master/data
+[themes]: /preseted-themes
+[theme config]: /theme-config
