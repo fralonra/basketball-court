@@ -48,5 +48,5 @@ const element = court().toDom()
 
 [wiki]: https://en.wikipedia.org/wiki/Basketball_court
 [datas]: https://github.com/fralonra/basketball-court/tree/master/data
-[themes]: https://basketball-court.now.sh/#preseted-themes
-[theme config]: https://basketball-court.now.sh/#theme-config
+[themes]: https://basketball-court.netlify.com/preseted-themes
+[theme config]: https://basketball-court.netlify.com/theme-config
