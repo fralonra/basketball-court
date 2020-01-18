@@ -1,6 +1,6 @@
 {
   "name": "basketball-court",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Generate a basketball court in svg format.",
   "main": "src/index.js",
   "scripts": {
@@ -24,7 +24,7 @@
   "bugs": {
     "url": "https://github.com/fralonra/basketball-court/issues"
   },
-  "homepage": "https://github.com/fralonra/basketball-court#readme",
+  "homepage": "https://basketball-court.netlify.com/",
   "devDependencies": {
     "@babel/preset-env": "^7.7.7",
     "@rollup/plugin-commonjs": "^11.0.1",
