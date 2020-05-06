@@ -28,7 +28,7 @@ Node.prototype.toDom = function () {
   }
   const el = window.document.createElementNS(nameSpace, this.tag)
   for (const attr in this.attrs) {
-    el.setAttribute(attr, this.attrs[attr])
+    el.setAttributeNS(null, attr, this.attrs[attr])
   }
   this.children.forEach(child => {
     el.appendChild(child.toDom())
