@@ -21,14 +21,14 @@ yarn add basketball-court
 ## Usage
 
 ```javascript
-const court = require('basketball-court')
+const basketballCourt = require('basketball-court')
 // Or include the script in your HTML.
 // <script src="/path/to/basketball-court.min.js"></script>
 
 // Convert svg to string, which can be outputed as a file.
-console.log(court().toString())
+console.log(basketballCourt().toString())
 // Or you might want to use it as an SVGELement.
-const element = court().toDom()
+const element = basketballCourt().toDom()
 ```
 
 ## API
