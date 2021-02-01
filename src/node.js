@@ -28,7 +28,8 @@ Node.prototype.toDom = function () {
   }
   const el = window.document.createElementNS(nameSpace, this.tag)
   for (const attr in this.attrs) {
-    el.setAttributeNS(null, attr, this.attrs[attr])
+    const namespace = attr.split(':')[0] === 'xmlns' ? 'http://www.w3.org/2000/xmlns/' : null
+    el.setAttributeNS(namespace, attr, this.attrs[attr])
   }
   this.children.forEach(child => {
     el.appendChild(child.toDom())
